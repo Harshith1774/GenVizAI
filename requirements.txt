@@ -1,0 +1,10 @@
+streamlit
+audiorecorder
+SpeechRecognition
+google-generativeai
+pandas
+SQLAlchemy
+psycopg2-binary
+pymysql
+cryptography
+plotly
