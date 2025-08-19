@@ -46,23 +46,23 @@ def get_db_schema(engine, db_name):
         
     try:
         inspector = inspect(engine)
-        schema_info = f"Schema for database '{db_name}':\n"
+        schema_info = f"Schema for database **`{db_name}`**:\n\n"
         
         # Get table information
         tables = inspector.get_table_names(schema=db_name)
         if tables:
-            schema_info += "\nTables:\n"
+            schema_info += "**Tables:**\n"
             for table_name in tables:
                 columns = inspector.get_columns(table_name, schema=db_name)
-                schema_info += f"- {table_name}: " + ", ".join([f"{col['name']} ({col['type']})" for col in columns]) + "\n"
+                schema_info += f"- `{table_name}`: " + ", ".join([f"{col['name']} ({col['type']})" for col in columns]) + "\n"
 
         # Get view information
         views = inspector.get_view_names(schema=db_name)
         if views:
-            schema_info += "\nViews (treat these as queryable tables):\n"
+            schema_info += "\n**Views (query as tables):**\n"
             for view_name in views:
                 columns = inspector.get_columns(view_name, schema=db_name)
-                schema_info += f"- {view_name}: " + ", ".join([f"{col['name']} ({col['type']})" for col in columns]) + "\n"
+                schema_info += f"- `{view_name}`: " + ", ".join([f"{col['name']} ({col['type']})" for col in columns]) + "\n"
                 
         return schema_info if tables or views else f"No tables or views found in the database '{db_name}'."
     except Exception as e:

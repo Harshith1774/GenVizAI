@@ -10,42 +10,50 @@ def create_smart_chart(df: pd.DataFrame):
     if df is None or df.empty:
         return None
 
-    # --- New: Smart Date Conversion ---
-    # Attempt to convert any object columns that look like dates into datetime objects
+    # Smart Date Conversion
     for col in df.select_dtypes(include=['object']).columns:
         try:
             df[col] = pd.to_datetime(df[col])
         except (ValueError, TypeError):
-            # This column is not a date, so we leave it as is
             pass
-    # --- End of New Code ---
 
     # --- Rule 1: Metric Card for a single value ---
     if df.shape[0] == 1 and df.shape[1] == 1:
-        # Create a metric card using st.metric
         st.metric("Result", df.iloc[0, 0])
-        return "metric" # Special return type for metric
+        return "metric"
 
-    # --- Rule 2: Bar Chart for categorical data ---
-    # Identifies one text column and one numeric column
     numeric_cols = df.select_dtypes(include=['number']).columns
     string_cols = df.select_dtypes(include=['object', 'category']).columns
+    date_cols = df.select_dtypes(include=['datetime64']).columns
 
-    if len(numeric_cols) == 1 and len(string_cols) == 1:
-        x_ax = string_cols[0]
+    # --- Rule 2: Bar Chart ---
+    if len(numeric_cols) == 1 and len(string_cols) >= 1:
         y_ax = numeric_cols[0]
+        x_ax = df[string_cols].nunique().idxmax()
         fig = px.bar(df, x=x_ax, y=y_ax, title=f"{y_ax} by {x_ax}")
         return fig
 
-    # --- Rule 3: Line Chart for time-series data ---
-    # This rule will now work thanks to the smart conversion above
-    date_cols = df.select_dtypes(include=['datetime64']).columns
+    # --- Rule 3: Line Chart ---
     if len(date_cols) == 1 and len(numeric_cols) >= 1:
-        # Allow one date column and one or more numeric columns
         x_ax = date_cols[0]
         y_axes = numeric_cols
         fig = px.line(df, x=x_ax, y=y_axes, title=f"{', '.join(y_axes)} over time")
         return fig
         
-    # --- Fallback: If no rules match, don't create a chart ---
+    # --- New Rule 4: Scatter Plot ---
+    if len(numeric_cols) == 2:
+        x_ax, y_ax = numeric_cols[0], numeric_cols[1]
+        fig = px.scatter(df, x=x_ax, y=y_ax, title=f"{y_ax} vs. {x_ax}")
+        return fig
+
+    # --- New Rule 5: Pie Chart ---
+    if len(numeric_cols) == 1 and len(string_cols) == 1:
+        # Pie charts are good for a small number of categories
+        if df[string_cols[0]].nunique() < 10:
+            names_col = string_cols[0]
+            values_col = numeric_cols[0]
+            fig = px.pie(df, names=names_col, values=values_col, title=f"Distribution of {values_col} by {names_col}")
+            return fig
+
+    # --- Fallback: If no rules match ---
     return None
