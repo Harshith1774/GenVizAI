@@ -1,27 +1,26 @@
 import speech_recognition as sr
+import io
 
-def transcribe_audio(audio_segment):
+def transcribe_audio_bytes(audio_bytes):
     """
-    Transcribes an audio segment object from audiorecorder to text.
+    Transcribes raw audio bytes (from st.audio_recorder) to text.
     Returns the transcribed text and an error message (if any).
     """
-    if not audio_segment:
+    if not audio_bytes:
         return None, "No audio recorded."
 
     recognizer = sr.Recognizer()
     
-    # Create an AudioData object directly from the pydub segment
-    audio_data = sr.AudioData(
-        frame_data=audio_segment.raw_data,
-        sample_rate=audio_segment.frame_rate,
-        sample_width=audio_segment.sample_width
-    )
-    
-    try:
-        # Use Google's free web speech API for transcription
-        text = recognizer.recognize_google(audio_data)
-        return text, None
-    except sr.UnknownValueError:
-        return None, "Sorry, I could not understand the audio. Please try again."
-    except sr.RequestError as e:
-        return None, f"Could not request results from the service; {e}"
+    # Use an in-memory buffer to treat the bytes as a file
+    with sr.AudioFile(io.BytesIO(audio_bytes)) as source:
+        try:
+            # Listen for the data from the audio source
+            recorded_audio = recognizer.record(source)
+            # Use Google's free web speech API for transcription
+            text = recognizer.recognize_google(recorded_audio)
+            return text, None
+        except sr.UnknownValueError:
+            return None, "Sorry, I could not understand the audio. Please try again."
+        except sr.RequestError as e:
+            return None, f"Could not request results from the service; {e}"
+

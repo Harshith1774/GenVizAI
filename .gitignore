@@ -1,18 +1,16 @@
 # Genviz AI Project .gitignore
 
 # Environments
-# Ignore the virtual environment folder
 .venv
 venv/
 ENV/
 env/
 
 # Streamlit-specific
-# NEVER commit your secrets file! This is the most important line.
+# The secrets file is no longer used, but this is good practice
 .streamlit/secrets.toml
 
 # Local database files
-# Ignore the local SQLite database we used for testing
 *.db
 *.sqlite3
 
@@ -22,7 +20,6 @@ __pycache__/
 *$py.class
 
 # IDE-specific files
-# Ignore settings for VS Code
 .vscode/
 
 # OS-specific files
