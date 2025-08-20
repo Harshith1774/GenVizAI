@@ -3,10 +3,7 @@ import plotly.express as px
 import pandas as pd
 
 def create_smart_chart(df: pd.DataFrame):
-    """
-    Analyzes a DataFrame and creates the most appropriate Plotly chart.
-    Returns a Plotly figure object or None if no suitable chart can be created.
-    """
+
     if df is None or df.empty:
         return None
 
